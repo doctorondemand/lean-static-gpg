@@ -10,6 +10,8 @@ LIBGPGERROR_VERSION=1.42
 LIBKSBA_VERSION=1.5.1
 NPTH_VERSION=1.6
 PINENTRY_VERSION=1.1.1
+ZLIB_VERSION=1.2.8
+BZIP2_VERSION=1.0.6-g10
 
 DESTDIR=
 PREFIX="$PWD/gnupg"
@@ -49,6 +51,8 @@ $gnupgweb/libgpg-error/libgpg-error-$LIBGPGERROR_VERSION.tar.bz2
 $gnupgweb/libksba/libksba-$LIBKSBA_VERSION.tar.bz2
 $gnupgweb/npth/npth-$NPTH_VERSION.tar.bz2
 $gnupgweb/pinentry/pinentry-$PINENTRY_VERSION.tar.bz2
+$gnupgweb/bzip2/bzip2-$BZIP2_VERSION.tar.gz
+$gnupgweb/zlib/zlib-$ZLIB_VERSION.tar.gz
 EOF
     )
 }
@@ -86,6 +90,18 @@ tar -C "$WORK" -xzf download/musl-$MUSL_VERSION.tar.gz
     make -kj$NJOBS
     make install
 )
+
+tar -C "$WORK" -xzf download/bzip2-$BZIP2_VERSION.tar.gz
+(
+  #mkdir -p "$WORK/bzip2"
+  cd work/bzip2-$BZIP2_VERSION
+  export CC="$WORK/deps/bin/musl-gcc"
+  make -kj$NJOBS CC="$WORK/deps/bin/musl-gcc"
+  make install PREFIX="$WORK/deps" CC="$WORK/deps/bin/musl-gcc"
+)
+
+#$gnupgweb/zlib/zlib-$ZLIB_VERSION.tar.gz
+
 
 tar -C "$WORK" -xjf download/npth-$NPTH_VERSION.tar.bz2
 (
@@ -174,17 +190,13 @@ tar -C "$WORK" -xjf download/gnupg-$GNUPG_VERSION.tar.bz2
         --with-npth-prefix="$WORK/deps" \
         --with-agent-pgm="$PREFIX/bin/gpg-agent" \
         --with-pinentry-pgm="$PREFIX/bin/pinentry" \
-        --disable-bzip2 \
+        --enable-bzip2 \
+	      --with-bzip2="$WORK/deps/" \
+        --enable-zip \
         --disable-card-support \
         --disable-ccid-driver \
         --disable-dirmngr \
         --disable-gnutls \
-        --disable-gpg-blowfish \
-        --disable-gpg-cast5 \
-        --disable-gpg-idea \
-        --disable-gpg-md5 \
-        --disable-gpg-rmd160 \
-        --disable-gpgtar \
         --disable-ldap \
         --disable-libdns \
         --disable-nls \
@@ -193,8 +205,7 @@ tar -C "$WORK" -xjf download/gnupg-$GNUPG_VERSION.tar.bz2
         --disable-regex \
         --disable-scdaemon \
         --disable-sqlite \
-        --disable-wks-tools \
-        --disable-zip
+        --disable-wks-tools
     make -kj$NJOBS
     make install DESTDIR="$DESTDIR"
     rm "$DESTDIR$PREFIX/bin/gpgscm"
