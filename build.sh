@@ -100,7 +100,13 @@ tar -C "$WORK" -xzf download/bzip2-$BZIP2_VERSION.tar.gz
   make install PREFIX="$WORK/deps" CC="$WORK/deps/bin/musl-gcc"
 )
 
-#$gnupgweb/zlib/zlib-$ZLIB_VERSION.tar.gz
+tar -C "$WORK" -xzf download/zlib-$ZLIB_VERSION.tar.gz
+(
+  cd work/zlib-$ZLIB_VERSION
+  prefix=$WORK/deps CC="$WORK/deps/bin/musl-gcc" ./configure --static 
+  make -kj$NJOBS
+  make install
+)
 
 
 tar -C "$WORK" -xjf download/npth-$NPTH_VERSION.tar.bz2
@@ -193,6 +199,7 @@ tar -C "$WORK" -xjf download/gnupg-$GNUPG_VERSION.tar.bz2
         --enable-bzip2 \
 	      --with-bzip2="$WORK/deps/" \
         --enable-zip \
+	      --with-zlib="$WORK/deps/" \
         --disable-card-support \
         --disable-ccid-driver \
         --disable-dirmngr \
